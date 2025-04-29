@@ -9,7 +9,6 @@ class OpenAIConnection:
         return openai
 
     def connection_by_environment_variable(self):
-        print("B")
         return openai.OpenAI()    
 
     def connection(self):

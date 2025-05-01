@@ -17,4 +17,18 @@ class OpenAIConnection:
         else:
             return self.connection_by_local_variable()
 
-        
+class TextToAudioToModel(OpenAIConnection):
+    def __init__(self, input, api_key=None, model="tts-1", voice="onyx", instructions ="", response_format="mp3", speed=1):
+        super().__init__(api_key)
+        self.client = self.connection()
+        self.request_body = {
+            "input": input,
+            "model" : model,
+            "voice" : voice,
+            "instructions" : instructions,
+            "response_format" : response_format,
+            "speed" : speed,
+        }
+
+    def run_model(self):
+        return self.connection().audio.speech.create(**self.request_body)

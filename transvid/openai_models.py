@@ -27,5 +27,4 @@ class TextToAudioModel:
         }
 
     def run_model(self):
-        print("Corriendo modelo")
         return self.client.audio.speech.create(**self.params)

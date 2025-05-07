@@ -31,10 +31,14 @@ class TextToAudioModels:
         return self.client.audio.speech.create(**self.params)
 
 class LocalWhisperModel:
-    def __init__(self, model="trubo"):
+    def __init__(self, model="turbo", file):
         self.model = model
         self.client = self.load_model()
+        self.file = file
 
     def load_model(self):
         whisper.load_model(self.model)
+    
+    def transcribe(self):
+        self.client.transcribe(audio=self.file)
 

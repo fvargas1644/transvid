@@ -9,14 +9,15 @@ class DownloadYoutubeVideo:
         output_name : str = "video_youtube"
     ):
         self.url = url
-        self.kwargs = {
+        self.download_options = {
             "format": quality,
             "merge_output_format": format_output,
             "outtmpl": output_name
         }
 
     def download_video(self):
-        video = yt_dlp.YoutubeDL(self.kwargs)
-        video.download([self.url])
+        with yt_dlp.YoutubeDL(self.download_options) as video:
+            video.download([self.url])
+
 
 

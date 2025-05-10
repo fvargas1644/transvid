@@ -1,4 +1,5 @@
 import yt_dlp
+from translators import LocalWhisperModel
 
 class DownloadYoutubeVideo:
     def __init__(
@@ -18,6 +19,14 @@ class DownloadYoutubeVideo:
     def download_video(self):
         with yt_dlp.YoutubeDL(self.download_options) as video:
             video.download([self.url])
+
+class ProcessAudio:
+    def __init__(self, file: str):
+        self.file = file
+
+    def transcribe_with_local_whisper_model(self, model : str="turbo"):
+        transcription = LocalWhisperModel(model, file=self.file)
+        return transcription
 
 
 

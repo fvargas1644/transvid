@@ -26,7 +26,7 @@ class ProcessAudio:
 
     def transcribe_with_local_whisper_model(self, model : str="turbo"):
         transcription = LocalWhisperModel(model, file=self.file)
-        return transcription
+        return transcription.transcribe()
 
 
 

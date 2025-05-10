@@ -2,8 +2,8 @@ from googletrans import Translator
 import deepl
 
 
-class Translators:
-    def __init__(self, text: str, target_lang='es', source_lang=None):
+class TextTranslators:
+    def __init__(self, text: str, target_lang : str='es', source_lang : str =None):
         self.target_lang = target_lang
         self.source_lang = source_lang
         self.text = text

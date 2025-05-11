@@ -1,3 +1,5 @@
+from pathlib import Path
+
 def divide_text_into_parts(text : str, maximum_length : int= 13000):
     text_parts = []
     start = 0
@@ -18,4 +20,11 @@ def divide_text_into_parts(text : str, maximum_length : int= 13000):
         start = cutting
 
     return text_parts
+
+def create_folder(name : str):
+    
+    folder=Path(name)
+
+    if not folder.exists(): 
+        folder.mkdir()
 

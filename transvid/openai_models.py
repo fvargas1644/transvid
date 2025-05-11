@@ -1,6 +1,7 @@
 import openai
 from openai import OpenAI
 import whisper
+from pathlib import Path
 
 def create_openai_client(api_key=None):
     """Return an OpenAI client using a provided API key or the environment's key"""
@@ -27,8 +28,16 @@ class TextToAudioModels:
             "speed": speed,
         }
 
-    def run_model(self):
-        return self.client.audio.speech.create(**self.params)
+        self.response_format = response_format
+
+    def create_audio(self, file_name : str ):
+
+        file = Path(f"{file_name}.{self.response_format}")
+        
+        with self.client.audio.speech.with_streaming_response.create(**self.params) as response:
+            response.stream_to_file(file)
+        
+        return file
 
 class LocalWhisperModel:
     def __init__(self,file : str,  model="turbo" ):

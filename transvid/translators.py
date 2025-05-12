@@ -10,7 +10,7 @@ class TextTranslators:
         self.target_lang = target_lang
         self.source_lang = source_lang
     
-    def obtain_kwargs(self, key_target_lang, key_source_lang):
+    def __obtain_kwargs(self, key_target_lang, key_source_lang):
         kwargs = {key_target_lang: self.target_lang}
 
         if self.source_lang:
@@ -20,13 +20,13 @@ class TextTranslators:
 
     async def __translate_with_googletrans(self,text : str):
         translator  = Translator()
-        kwargs = self.obtain_kwargs(key_target_lang='dest', key_source_lang='src')
+        kwargs = self.__obtain_kwargs(key_target_lang='dest', key_source_lang='src')
         translation = await translator.translate(text, **kwargs)
         return translation.text
 
     def __translate_with_deepl(self, auth_key, text : str):
         translator = deepl.Translator(auth_key)
-        kwargs = self.obtain_kwargs(key_target_lang='target_lang', key_source_lang='source_lang')
+        kwargs = self.__obtain_kwargs(key_target_lang='target_lang', key_source_lang='source_lang')
         translation = translator.translate_text(text, **kwargs)
         return translation.text
 

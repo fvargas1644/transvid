@@ -58,6 +58,12 @@ class FileManager:
         self.create_folder(self.audios_folder)
         self.create_folder(self.videos_folder)
         self.create_folder(self.transcriptions_folder)
+    
+    def route(self, file=str, folder=str):
+        if not Path(f"{self.main_folder}/{folder}").exists(): 
+            raise ValueError(f"Folder {self.main_folder}/{folder} not found")
+        else:
+            return Path(f"{self.main_folder}/{folder}/{file}")
 
 
     

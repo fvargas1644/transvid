@@ -1,6 +1,6 @@
 from openai import OpenAI
 import whisper
-from pathlib import Path
+from utils import FileManager
 
 def create_openai_client(api_key=None):
     """Return an OpenAI client using a provided API key or the environment's key"""
@@ -29,9 +29,9 @@ class TextToAudioModels:
 
         self.response_format = response_format
 
-    def create_audio(self, file_name : str, folder):
+    def create_audio(self, file_name : str, folder : str, default_main_folder : bool = True):
 
-        file = Path(f"{folder}/{file_name}.{self.response_format}")
+        file = FileManager().check_path(file=f"{file_name}.{self.response_format}", folder=folder, default_main_folder=default_main_folder)
         
         with self.client.audio.speech.with_streaming_response.create(**self.params) as response:
             response.stream_to_file(file)

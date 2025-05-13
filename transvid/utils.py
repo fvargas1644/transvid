@@ -59,11 +59,16 @@ class FileManager:
         self.create_folder(self.videos_folder)
         self.create_folder(self.transcriptions_folder)
     
-    def check_path(self, file=str, folder=str):
-        if not Path(f"{self.main_folder}/{folder}").exists(): 
-            raise ValueError(f"Folder {self.main_folder}/{folder} not found")
+    def check_path(self, file=str, folder=str, default_main_folder : bool=True):
+
+        folder_path = Path(f"{self.main_folder}/{folder}") if default_main_folder else Path(f"{folder}")
+
+        if  not folder_path.exists(): 
+            raise ValueError(f"Folder {folder_path} not found")
         else:
-            return Path(f"{self.main_folder}/{folder}/{file}")
+            return Path(f"{folder_path}/{file}")
+        
+        
 
 
     

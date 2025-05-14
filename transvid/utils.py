@@ -68,6 +68,33 @@ class FileManager:
         else:
             return Path(f"{folder_path}/{file}")
         
+    """Create a non-existing folder in the current path if create_in is None, otherwise create the folder in the folder mentioned in create_in"""
+    def create_dynamic_folder(self, create_in : str = None):
+        folder_path = Path(create_in) if create_in != None else ""
+
+        if create_in != None:
+            if not folder_path.exists(): 
+                raise ValueError(f"Folder {folder_path} not found")
+        
+        i=0
+        while True:
+            new_folder = Path(f"{create_in}/{i}") if create_in != None else Path(f"{i}")
+            if not new_folder.exists():
+                new_folder.mkdir()
+                return new_folder
+            
+            i+=1
+
+        
+    
+
+            
+
+
+
+
+
+        
         
 
 

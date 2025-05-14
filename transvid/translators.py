@@ -72,7 +72,10 @@ class TranslateAudio(TextTranslators):
             voice=voice, 
             instructions=instructions,
             response_format=response_format,
-            speed= speed
+            speed=speed
         )
-
+        
+        #text_divided_into_parts =  divide_text_into_parts(text, maximum_length=4000) 
         text_to_audio.create_audio("audio")
+
+

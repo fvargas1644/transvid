@@ -29,9 +29,9 @@ class TextToAudioModels:
 
         self.response_format = response_format
 
-    def create_audio(self, file_name : str, folder : str, default_main_folder : bool = True):
+    def create_audio(self, file_name : str, folder : str):
 
-        file = FileManager().check_path(file=f"{file_name}.{self.response_format}", folder=folder, default_main_folder=default_main_folder)
+        file = FileManager().check_path(file=f"{file_name}.{self.response_format}", folder=folder)
         
         with self.client.audio.speech.with_streaming_response.create(**self.params) as response:
             response.stream_to_file(file)

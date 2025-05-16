@@ -93,6 +93,14 @@ class FileManager:
             
             i+=1
 
+    def path_components(self, path : str):
+        path=Path(path)
+
+        folder = str(path.parent) 
+        filename = str(path.stem) 
+        extension_file = path.suffix.lstrip('.')
+
+        return folder, filename, extension_file
         
     
 

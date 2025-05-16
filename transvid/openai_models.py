@@ -45,8 +45,8 @@ class LocalWhisperModel:
         self.file = file
 
     def load_model(self):
-        whisper.load_model(self.model)
+        return whisper.load_model(self.model)
     
     def transcribe(self):
-        self.client.transcribe(audio=self.file)
+        return self.client.transcribe(audio=self.file)
 

@@ -1,5 +1,6 @@
 import yt_dlp
-from utils import format_timestamp
+from utils import format_timestamp, FileManager
+from openai_models import LocalWhisperModel
 
 
 class DownloadYoutubeVideo:
@@ -25,10 +26,16 @@ class Transcribe:
     def __init__(self, audio_file=str):
         self.audio_file = audio_file
     
-    def create_srt_file(self, segments, filename_str : str):
+    def create_srt_file_with_local_whisper_model(self, model : str="turbo", folder : str = None):
 
-        with open(filename_str, 'w', encoding='utf-8') as file_str:
-            for segment in segments:
+        path_components = FileManager().path_components(self.audio_file)
+
+        transcription = LocalWhisperModel(file=self.audio_file, model=model).transcribe()
+
+        file = FileManager().check_path(file=f"{path_components[1]}.srt", folder=folder) if folder != None else f"{path_components[1]}.srt"
+
+        with open(file, 'w', encoding='utf-8') as file_srt:
+            for segment in transcription['segments']:
                 start_time = format_timestamp(segment['start'])
                 end_time = format_timestamp(segment['end'])
 
@@ -36,5 +43,6 @@ class Transcribe:
                 segment_id = segment['id'] + 1
 
                 srt_entry = f"{segment_id}\n{start_time} --> {end_time}\n{text}\n\n"
-                file_str.write(srt_entry)
+                file_srt.write(srt_entry)
+
 

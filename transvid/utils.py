@@ -1,4 +1,5 @@
 from pathlib import Path
+from datetime import timedelta
 
 def divide_text_into_parts(text : str, maximum_length : int= 13000):
     text_parts = []
@@ -20,6 +21,13 @@ def divide_text_into_parts(text : str, maximum_length : int= 13000):
         start = cutting
 
     return text_parts
+
+def format_timestamp(seconds):
+    td = timedelta(seconds=seconds)
+    hours, remainder = divmod(td.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    millis = int((td.total_seconds() - int(td.total_seconds())) * 1000)
+    return f"{int(hours):02}:{int(minutes):02}:{int(seconds):02},{millis:03d}"
 
 
 class FileManager:

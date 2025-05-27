@@ -1,5 +1,5 @@
 import yt_dlp
-from utils import format_timestamp, FileManager
+from utils import format_timestamp, FileManager, convert_to_mkv
 from openai_models import LocalWhisperModel
 
 
@@ -44,5 +44,15 @@ class Transcribe:
 
                 srt_entry = f"{segment_id}\n{start_time} --> {end_time}\n{text}\n\n"
                 file_srt.write(srt_entry)
+
+class Video:
+    def __init__(self, video_path : str = None):
+        self.video_path = FileManager().check_file(file=video_path)
+
+    def create_translated_video(self):
+        file_manager = FileManager()
+        file_manager.create_structure()
+
+        video_main_mkv  = convert_to_mkv(self.video_path, f'{file_manager.main_folder}/main.mkv')
 
 

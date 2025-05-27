@@ -1,5 +1,34 @@
 from pathlib import Path
 from datetime import timedelta
+import ffmpeg
+
+def convert_to_mkv(input_file, output_file=None):
+    """
+    Converts any video format to MKV using ffmpeg.
+
+    :param input_file: Path to the input video file.
+    :param output_file: (Optional) Path to the output MKV file. If not specified, 
+                        the output will have the same name with .mkv extension.
+    """
+    input_path = Path(input_file)
+
+    if output_file is None:
+        output_path = input_path.with_suffix('.mkv')
+    else:
+        output_path = Path(output_file)
+
+    try:
+        (
+            ffmpeg
+            .input(str(input_path))
+            .output(str(output_path))
+            .run(overwrite_output=True)
+        )
+
+        return output_path
+    except ffmpeg.Error as e:
+        raise ValueError("An error occurred during conversion:", e)
+
 
 def divide_text_into_parts(text : str, maximum_length : int= 13000):
     text_parts = []
@@ -75,6 +104,15 @@ class FileManager:
             raise ValueError(f"Folder {folder_path} not found")
         else:
             return Path(f"{folder_path}/{file}")
+        
+    def check_file(self, file=str):
+
+        file_path = Path(f"{file}")
+
+        if  not file_path.is_file(): 
+            raise FileNotFoundError(f"File {file_path} not found")
+        else:
+            return file_path
         
     """Create a non-existing folder in the current path if create_in is None, otherwise create the folder in the folder mentioned in create_in"""
     def create_dynamic_folder(self, create_in : str = None):

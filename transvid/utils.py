@@ -60,7 +60,7 @@ def format_timestamp(seconds):
 
 
 class FileManager:
-    def __init__(self, main_folder : str ="transvid0"):
+    def __init__(self, main_folder : str = "transvid0"):
         
         # Main folder
         self.main_folder = main_folder
@@ -76,8 +76,7 @@ class FileManager:
             folder = Path(f"transvid{i}")
             if not folder.exists():
                 folder.mkdir()
-                self.main_folder = folder
-                break
+                return folder
             i+=1
 
     def create_folder(self, name : str):
@@ -86,10 +85,12 @@ class FileManager:
         if not folder.exists(): 
             folder.mkdir()
 
+        return folder
+
     def create_structure(self):
 
         # Main folder
-        self.create_main_folder()
+        self.main_folder = self.create_main_folder()
 
         # Folders
         self.create_folder(self.audios_folder)
@@ -139,7 +140,6 @@ class FileManager:
         extension_file = path.suffix.lstrip('.')
 
         return folder, filename, extension_file
-        
     
 
             

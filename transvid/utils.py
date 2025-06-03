@@ -76,7 +76,8 @@ class FileManager:
             folder = Path(f"transvid{i}")
             if not folder.exists():
                 folder.mkdir()
-                return folder
+                self.main_folder = folder
+                break
             i+=1
 
     def create_folder(self, name : str):
@@ -90,12 +91,12 @@ class FileManager:
     def create_structure(self):
 
         # Main folder
-        self.main_folder = self.create_main_folder()
+        self.create_main_folder()
 
         # Folders
-        self.create_folder(self.audios_folder)
-        self.create_folder(self.videos_folder)
-        self.create_folder(self.transcriptions_folder)
+        self.audios_folder = self.create_folder(f'{self.main_folder}/audios')
+        self.videos_folder = self.create_folder(f'{self.main_folder}/videos')
+        self.transcriptions_folder = self.create_folder(f'{self.main_folder}/transcriptions')
     
     def check_path(self, file=str, folder=str):
 
@@ -140,18 +141,3 @@ class FileManager:
         extension_file = path.suffix.lstrip('.')
 
         return folder, filename, extension_file
-    
-
-            
-
-
-
-
-
-        
-        
-
-
-    
-
-

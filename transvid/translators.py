@@ -52,7 +52,7 @@ class TranslateAudio(TextTranslators):
         super().__init__(target_lang=target_lang, source_lang=source_lang)
 
     def transcribe_with_local_whisper_model(self, model : str="turbo"):
-        transcription = LocalWhisperModel(model, file=self.file)
+        transcription = LocalWhisperModel(file=self.file, model=model)
         return transcription.transcribe()
 
     def convert_text_to_audio_with_openai(

@@ -2,6 +2,7 @@ import yt_dlp
 from utils import format_timestamp, FileManager, convert_to_mkv
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip
+from translators import TranslateAudio
 
 
 class DownloadYoutubeVideo:
@@ -50,7 +51,23 @@ class Video:
     def __init__(self, video_path : str):
         self.video_path = FileManager().check_file(file=video_path)
 
-    def create_translated_video(self):
+    def create_translated_video(
+            self, 
+            target_lang : str='es', 
+            source_lang : str =None,
+            openai_api_key: str = None,
+            voice_config : dict  = None
+        ):
+
+        if voice_config is None:
+            voice_config = {
+                "model": "tts-1",
+                "voice": "onyx",
+                "instructions": "",
+                "speed": 1.0
+            }
+
+
         file_manager = FileManager()
         file_manager.create_structure()
 
@@ -58,6 +75,23 @@ class Video:
         audio_main_wav = VideoFileClip(video_main_mkv).audio 
 
         audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/audio_main.wav')
+
+        translate_audio = TranslateAudio(
+            file=f'{file_manager.audios_folder}/audio_main.wav', 
+            target_lang=target_lang, 
+            source_lang=source_lang
+        )
+
+        audio_transcription = translate_audio.transcribe_with_local_whisper_model()
+
+        translate_audio.convert_text_to_audio_with_openai(
+            audio_transcription["text"], 
+            create_in=file_manager.audios_folder,
+            api_key=openai_api_key
+        )
+
+
+
 
         
 

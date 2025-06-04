@@ -1,6 +1,39 @@
 from pathlib import Path
 from datetime import timedelta
 import ffmpeg
+import subprocess
+
+def create_video_with_audio(output_video :str, audio_file :str, resolution="1280x720"):
+    """
+    Creates a black video with the specified resolution and overlays the given audio file.
+    
+    Parameters:
+    - output_video: Name of the output video file 
+    - audio_file: Path to the input audio file 
+    - resolution: Resolution of the black video background (default is "1280x720")
+    """
+    command = [
+        "ffmpeg",
+        "-f", "lavfi",
+        "-i", f"color=c=black:s={resolution}",
+        "-i", audio_file,
+        "-shortest",
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-pix_fmt", "yuv420p",
+        output_video
+    ]
+    
+    try:
+        subprocess.run(command, check=True)
+        print(f"Video successfully created: {output_video}")
+        return True
+    
+    except subprocess.CalledProcessError as e:
+        print("Error while executing ffmpeg:", e)
+        return False
+
 
 def convert_to_mkv(input_file, output_file=None):
     """

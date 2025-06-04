@@ -88,7 +88,7 @@ class Video:
         translated_transcript = translate_audio.translate(text=transcription["text"])
 
 
-        translate_audio.convert_text_to_audio_with_openai(
+        audios = translate_audio.convert_text_to_audio_with_openai(
             text=translated_transcript, 
             folder=file_manager.audios_folder,
             api_key=openai_api_key

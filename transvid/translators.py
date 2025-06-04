@@ -63,7 +63,7 @@ class TranslateAudio(TextTranslators):
         model: str = "tts-1",
         voice: str = "onyx",
         instructions: str = "",
-        response_format: str = "mp3",
+        response_format: str = "wav",
         speed: float = 1.0,
     ):
         text_to_audio = TextToAudioModels(
@@ -79,7 +79,13 @@ class TranslateAudio(TextTranslators):
         text_divided_into_parts =  divide_text_into_parts(text, maximum_length=4000) 
 
         i=0
+
+        audios = []
+
         for text in text_divided_into_parts:
-            text_to_audio.create_audio(file_name=f"{i}", folder=folder)
+            file = text_to_audio.create_audio(file_name=f"{i}", folder=folder)
+            audios.append(f'{folder}/{file}')
             i+=1
+
+        return audios
     

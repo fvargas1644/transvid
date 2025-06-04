@@ -14,7 +14,7 @@ class TextToAudioModels:
         model: str = "tts-1",
         voice: str = "onyx",
         instructions: str = "",
-        response_format: str = "mp3",
+        response_format: str = "wav",
         speed: float = 1.0,
     ):
         self.client = create_openai_client(api_key)

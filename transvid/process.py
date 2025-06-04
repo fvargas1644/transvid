@@ -82,10 +82,14 @@ class Video:
             source_lang=source_lang
         )
 
-        audio_transcription = translate_audio.transcribe_with_local_whisper_model()
+        transcription = translate_audio.transcribe_with_local_whisper_model(model="base")
+
+        # Remember to use deepl
+        translated_transcript = translate_audio.translate(text=transcription["text"])
+
 
         translate_audio.convert_text_to_audio_with_openai(
-            audio_transcription["text"], 
-            create_in=file_manager.audios_folder,
+            text=translated_transcript, 
+            folder=file_manager.audios_folder,
             api_key=openai_api_key
         )

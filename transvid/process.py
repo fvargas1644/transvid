@@ -89,10 +89,3 @@ class Video:
             create_in=file_manager.audios_folder,
             api_key=openai_api_key
         )
-
-
-
-
-        
-
-

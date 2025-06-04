@@ -57,15 +57,14 @@ class TranslateAudio(TextTranslators):
 
     def convert_text_to_audio_with_openai(
         self, 
-        text: str,  
-        create_in : str = None,
+        text: str,
+        folder : str,  
         api_key: str = None,
         model: str = "tts-1",
         voice: str = "onyx",
         instructions: str = "",
         response_format: str = "mp3",
         speed: float = 1.0,
-
     ):
         text_to_audio = TextToAudioModels(
             text=text, 
@@ -79,12 +78,8 @@ class TranslateAudio(TextTranslators):
         
         text_divided_into_parts =  divide_text_into_parts(text, maximum_length=4000) 
 
-        dynamic_folder_audio = FileManager().create_dynamic_folder(create_in=create_in)
-
         i=0
         for text in text_divided_into_parts:
-            text_to_audio.create_audio(file_name=f"{i}", folder=dynamic_folder_audio)
+            text_to_audio.create_audio(file_name=f"{i}", folder=folder)
             i+=1
-        
-        return dynamic_folder_audio
     

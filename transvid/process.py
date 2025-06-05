@@ -1,11 +1,13 @@
 import yt_dlp
-from utils import format_timestamp, FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files 
+from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip
 from translators import TranslateAudio
 
 
 def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : str = "turbo"):
+
+    FileManager().check_path(file)
 
     whisper = LocalWhisperModel(file=file, model=model)
     transcription = whisper.transcribe()
@@ -41,29 +43,6 @@ class DownloadYoutubeVideo:
     def download_video(self):
         with yt_dlp.YoutubeDL(self.download_options) as video:
             video.download([self.url])
-
-class Transcribe:
-    def __init__(self, audio_file=str):
-        self.audio_file = audio_file
-    
-    def create_srt_file_with_local_whisper_model(self, model : str="turbo", folder : str = None):
-
-        path_components = FileManager().path_components(self.audio_file)
-
-        transcription = LocalWhisperModel(file=self.audio_file, model=model).transcribe()
-
-        file = FileManager().check_path(file=f"{path_components[1]}.srt", folder=folder) if folder != None else f"{path_components[1]}.srt"
-
-        with open(file, 'w', encoding='utf-8') as file_srt:
-            for segment in transcription['segments']:
-                start_time = format_timestamp(segment['start'])
-                end_time = format_timestamp(segment['end'])
-
-                text = segment['text'].lstrip() 
-                segment_id = segment['id'] + 1
-
-                srt_entry = f"{segment_id}\n{start_time} --> {end_time}\n{text}\n\n"
-                file_srt.write(srt_entry)
 
 class Video:
     def __init__(self, video_path : str):

@@ -130,23 +130,14 @@ class FileManager:
         self.videos_folder = self.create_folder(f'{self.main_folder}/videos')
         self.transcriptions_folder = self.create_folder(f'{self.main_folder}/transcriptions')
     
-    def check_path(self, file=str, folder=str):
+    def check_path(self, path : str):
 
-        folder_path = Path(f"{folder}")
+        path = Path(path)
 
-        if  not folder_path.exists(): 
-            raise ValueError(f"Folder {folder_path} not found")
+        if  not path.exists(): 
+            raise ValueError(f"Path {path} not found")
         else:
-            return Path(f"{folder_path}/{file}")
-        
-    def check_file(self, file=str):
-
-        file_path = Path(f"{file}")
-
-        if  not file_path.is_file(): 
-            raise FileNotFoundError(f"File {file_path} not found")
-        else:
-            return file_path
+            return path
         
     """Create a non-existing folder in the current path if create_in is None, otherwise create the folder in the folder mentioned in create_in"""
     def create_dynamic_folder(self, create_in : str = None):

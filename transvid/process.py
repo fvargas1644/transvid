@@ -1,5 +1,5 @@
 import yt_dlp
-from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files
+from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip
 from translators import TranslateAudio
@@ -13,7 +13,6 @@ def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : 
     transcription = whisper.transcribe()
 
     with open(srt_file, 'w', encoding='utf-8') as str_file_name:
-        str_file_name.write("Hola")
         for segment in transcription['segments']:
             
             start_time = format_timestamp_for_srt_files(segment['start'])
@@ -46,7 +45,7 @@ class DownloadYoutubeVideo:
 
 class Video:
     def __init__(self, video_path : str):
-        self.video_path = FileManager().check_file(file=video_path)
+        self.video_path = FileManager().check_path(path=video_path)
 
     def create_translated_video(
             self, 
@@ -68,13 +67,13 @@ class Video:
         file_manager = FileManager()
         file_manager.create_structure()
 
-        video_main_mkv  = convert_to_mkv(self.video_path, f'{file_manager.videos_folder}/video_main.mkv')
+        video_main_mkv  = convert_to_mkv(self.video_path, f'{file_manager.videos_folder}/main_video.mkv')
         audio_main_wav = VideoFileClip(video_main_mkv).audio 
 
-        audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/audio_main.wav')
+        audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')
 
         translate_audio = TranslateAudio(
-            file=f'{file_manager.audios_folder}/audio_main.wav', 
+            file=f'{file_manager.audios_folder}/main_audio.wav', 
             target_lang=target_lang, 
             source_lang=source_lang
         )
@@ -93,9 +92,23 @@ class Video:
 
         i=0
         for audio in audios:
+            srt_file = f'{file_manager.transcriptions_folder}/{i}.srt'
+            video = f'{file_manager.videos_folder}/basic_video{i}.mkv'
+
+            create_srt_file_with_local_whisper_model(
+                file=audio, 
+                srt_file=srt_file
+            )
+
             status = create_video_with_audio(
-                output_video=f'{file_manager.videos_folder}/{i}.mkv', 
+                output_video=video, 
                 audio_file=audio
+            )
+
+            embed_subtitles(
+                input_video=video, 
+                subtitles_file=srt_file, 
+                output_video=f'{file_manager.videos_folder}/subtitle_video{i}.mkv'
             )
 
             if not status:

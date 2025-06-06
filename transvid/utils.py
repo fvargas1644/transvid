@@ -35,6 +35,32 @@ def create_video_with_audio(output_video :str, audio_file :str, resolution="1280
         return False
 
 
+def embed_subtitles(input_video : str, subtitles_file :str, output_video : str, font_size : int=30, alignment : int=8):
+    """
+    Embeds subtitles into a video using ffmpeg.
+
+    Parameters:
+    - input_video (str): Path to the input video file.
+    - subtitles_file (str): Path to the subtitle file (.srt).
+    - output_video (str): Path to the output video file.
+    - font_size (int, optional): Font size for the subtitles.
+    - alignment (int, optional): Subtitle alignment (8 = top center, 2 = bottom center, etc.).
+    """
+    command = [
+        "ffmpeg",
+        "-i", input_video,
+        "-vf", f"subtitles={subtitles_file}:force_style='FontSize={font_size},Alignment={alignment}'",
+        output_video
+    ]
+
+    try:
+        subprocess.run(command, check=True)
+        print(f"Video successfully created: {output_video}")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("Error running ffmpeg:", e)
+        return False
+
 def convert_to_mkv(input_file, output_file=None):
     """
     Converts any video format to MKV using ffmpeg.

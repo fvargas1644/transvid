@@ -1,7 +1,7 @@
 import yt_dlp
 from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles
 from openai_models import LocalWhisperModel
-from moviepy import VideoFileClip
+from moviepy import VideoFileClip, concatenate_videoclips
 from translators import TranslateAudio
 
 
@@ -91,9 +91,15 @@ class Video:
         )
 
         i=0
+
+        subtitle_videos = []
+        basic_videos = []
+
         for audio in audios:
             srt_file = f'{file_manager.transcriptions_folder}/{i}.srt'
-            video = f'{file_manager.videos_folder}/basic_video{i}.mkv'
+            basic_video = f'{file_manager.videos_folder}/basic_video{i}.mkv'
+            subtitle_video = f'{file_manager.videos_folder}/subtitle_video{i}.mkv'
+
 
             create_srt_file_with_local_whisper_model(
                 file=audio, 
@@ -101,16 +107,24 @@ class Video:
             )
 
             status = create_video_with_audio(
-                output_video=video, 
+                output_video=basic_video, 
                 audio_file=audio
             )
 
             embed_subtitles(
-                input_video=video, 
+                input_video=basic_video, 
                 subtitles_file=srt_file, 
-                output_video=f'{file_manager.videos_folder}/subtitle_video{i}.mkv'
+                output_video=subtitle_video
             )
 
             if not status:
                 # Combine the audio files into a single audio file and return it
                 return
+
+            subtitle_videos.append(subtitle_video)
+            basic_videos.append(basic_video)
+
+            i +=1
+        
+        subtitle_main_video = concatenate_videoclips(subtitle_videos)
+        subtitle_main_video.write_videofile("video_final.mkv", codec="libx264", audio_codec="aac")

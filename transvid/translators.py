@@ -66,16 +66,6 @@ class TranslateAudio(TextTranslators):
         response_format: str = "wav",
         speed: float = 1.0,
     ):
-
-        text_to_audio = TextToAudioModels(
-            text=text, 
-            api_key=api_key, 
-            model=model, 
-            voice=voice, 
-            instructions=instructions,
-            response_format=response_format,
-            speed=speed
-        )
         
         text_divided_into_parts =  divide_text_into_parts(text, maximum_length=4000) 
 
@@ -85,7 +75,18 @@ class TranslateAudio(TextTranslators):
 
         FileManager().check_path(folder) 
 
-        for text in text_divided_into_parts:
+        for text_part in text_divided_into_parts:
+
+            text_to_audio = TextToAudioModels(
+                text=text_part, 
+                api_key=api_key, 
+                model=model, 
+                voice=voice, 
+                instructions=instructions,
+                response_format=response_format,
+                speed=speed
+            )
+
             file_name = f'{folder}/{i}'
             file = text_to_audio.create_audio(file_name=file_name)
             audios.append(file)

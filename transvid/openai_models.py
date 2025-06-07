@@ -49,4 +49,3 @@ class LocalWhisperModel:
     
     def transcribe(self):
         return self.client.transcribe(audio=self.file)
-

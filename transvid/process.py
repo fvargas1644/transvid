@@ -43,11 +43,11 @@ class DownloadYoutubeVideo:
         with yt_dlp.YoutubeDL(self.download_options) as video:
             video.download([self.url])
 
-class Video:
+class GenerateTranslation:
     def __init__(self, video_path : str):
         self.video_path = FileManager().check_path(path=video_path)
 
-    def create_translated_video(
+    def create_video(
             self, 
             target_lang : str='es', 
             source_lang : str =None,

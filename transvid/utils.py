@@ -2,6 +2,22 @@ from pathlib import Path
 from datetime import timedelta
 import ffmpeg
 import subprocess
+from moviepy import concatenate_audioclips, AudioFileClip
+
+def merge_audios(audio_files : list[str], output : str ="final_audio.mp3"):
+    """
+    Merges multiple audio files into a single one.
+
+    :param audio_files: List of paths to audio files (in order)
+    :param output: Name of the output file (with extension)
+    """
+    try:
+        clips = [AudioFileClip(audio) for audio in audio_files]
+        final_audio = concatenate_audioclips(clips)
+        final_audio.write_audiofile(output)
+        print(f"✅ Audio successfully exported to: {output}")
+    except Exception as e:
+        print(f"❌ Error while merging audios: {e}")
 
 def create_video_with_audio(output_video :str, audio_file :str, resolution="1280x720"):
     """

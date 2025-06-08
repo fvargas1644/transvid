@@ -1,5 +1,5 @@
 import yt_dlp
-from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles
+from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip, concatenate_videoclips
 from translators import TranslateAudio
@@ -53,7 +53,7 @@ class Video:
             source_lang : str =None,
             openai_api_key: str = None,
             voice_config : dict  = None
-        ):
+        ):  
 
         if voice_config is None:
             voice_config = {
@@ -93,7 +93,6 @@ class Video:
         i=0
 
         subtitle_videos = []
-        basic_videos = []
 
         for audio in audios:
             srt_file = f'{file_manager.transcriptions_folder}/{i}.srt'
@@ -106,25 +105,25 @@ class Video:
                 srt_file=srt_file
             )
 
-            status = create_video_with_audio(
+            status_basic_video = create_video_with_audio(
                 output_video=basic_video, 
                 audio_file=audio
             )
 
-            embed_subtitles(
+            status_subtitle_video = embed_subtitles(
                 input_video=basic_video, 
                 subtitles_file=srt_file, 
                 output_video=subtitle_video
             )
 
-            if not status:
-                # Combine the audio files into a single audio file and return it
+            if not status_basic_video or not status_subtitle_video:
+                merge_audios(audio_files=audios, output='final_audio.wav')
                 return
 
             subtitle_videos.append(subtitle_video)
-            basic_videos.append(basic_video)
 
             i +=1
         
+        subtitle_videos = [VideoFileClip(video) for video in subtitle_videos]
         subtitle_main_video = concatenate_videoclips(subtitle_videos)
-        subtitle_main_video.write_videofile("video_final.mkv", codec="libx264", audio_codec="aac")
+        subtitle_main_video.write_videofile("final_video.mkv", codec="libx264", audio_codec="aac")

@@ -3,6 +3,27 @@ from datetime import timedelta
 import ffmpeg
 import subprocess
 from moviepy import concatenate_audioclips, AudioFileClip
+from errors import InvalidFileType
+
+def validate_media(path : str, expected_type : str= "audio"):
+    # Extensiones válidas para audio y video
+    audio_extensions = {'.mp3', '.wav', '.aac', '.ogg', '.flac', '.m4a'}
+    video_extensions = {'.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm'}
+
+    extension = Path(path).suffix.lower()
+
+    if expected_type == "audio":
+        if extension in audio_extensions:
+            return "audio"
+        else:
+            raise InvalidFileType(f"The file '{path}' is not a valid audio file.")
+    elif expected_type == "video":
+        if extension in video_extensions:
+            return "video"
+        else:
+            raise InvalidFileType(f"The file '{path}' is not a valid video file.")
+    else:
+        raise ValueError("Expected type must be either 'audio' or 'video'.")
 
 def merge_audios(audio_files : list[str], output : str ="final_audio.mp3"):
     """

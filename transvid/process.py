@@ -1,5 +1,5 @@
 import yt_dlp
-from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios
+from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios, validate_media
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip, concatenate_videoclips
 from translators import TranslateAudio
@@ -44,8 +44,8 @@ class DownloadYoutubeVideo:
             video.download([self.url])
 
 class GenerateTranslation:
-    def __init__(self, video_path : str):
-        self.video_path = FileManager().check_path(path=video_path)
+    def __init__(self, file : str):
+        self.file = FileManager().check_path(path=file)
 
     def create_video(
             self, 
@@ -54,6 +54,9 @@ class GenerateTranslation:
             openai_api_key: str = None,
             voice_config : dict  = None
         ):  
+
+        # Validate if file is a video
+        validate_media(path=self.file, expected_type="video")
 
         if voice_config is None:
             voice_config = {
@@ -67,7 +70,7 @@ class GenerateTranslation:
         file_manager = FileManager()
         file_manager.create_structure()
 
-        video_main_mkv  = convert_to_mkv(self.video_path, f'{file_manager.videos_folder}/main_video.mkv')
+        video_main_mkv  = convert_to_mkv(self.file, f'{file_manager.videos_folder}/main_video.mkv')
         audio_main_wav = VideoFileClip(video_main_mkv).audio 
 
         audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')
@@ -117,6 +120,7 @@ class GenerateTranslation:
             )
 
             if not status_basic_video or not status_subtitle_video:
+                print("The video could not be created. It was not possible to create the video. Instead, an audio file was created.")
                 merge_audios(audio_files=audios, output='final_audio.wav')
                 return
 

@@ -3,6 +3,7 @@ from utils import FileManager, convert_to_mkv, create_video_with_audio, format_t
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip, concatenate_videoclips
 from translators import TranslateAudio
+from pathlib import Path
 
 
 def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : str = "turbo"):
@@ -47,24 +48,52 @@ class GenerateTranslation:
     def __init__(self, file : str):
         self.file = FileManager().check_path(path=file)
 
-    def create_video(
-            self, 
-            target_lang : str='es', 
-            source_lang : str =None,
-            openai_api_key: str = None,
-            voice_config : dict  = None
-        ):  
+    def __validate_dictionaries(initial_voice_settings : dict = None, initial_transcription_settings: dict = None):
 
-        # Validate if file is a video
-        validate_media(path=self.file, expected_type="video")
-
-        if voice_config is None:
-            voice_config = {
+        if initial_voice_settings is None:
+            voice_settings = {
                 "model": "tts-1",
                 "voice": "onyx",
                 "instructions": "",
                 "speed": 1.0
             }
+        else:
+            voice_settings = {
+                "model": initial_voice_settings.get("model", "tts-1"),
+                "voice": initial_voice_settings.get("voice", "onyx"),
+                "instructions": initial_voice_settings.get("instructions", ""),
+                "speed": initial_voice_settings.get("speed", 1.0),
+            }
+
+        if initial_transcription_settings is None:
+            transcription_settings = {
+                "model": "turbo"
+            }
+
+        else:
+            transcription_settings  = {
+                "model": transcription_settings.get("model", "turbo")
+            }
+
+        return voice_settings, transcription_settings
+
+    def create_video(
+            self, 
+            ouput_video : str,
+            target_lang : str, 
+            source_lang : str =None,
+            openai_api_key: str = None,
+            voice_settings : dict  = None,
+            transcription_settings : dict = None
+
+        ):  
+
+        if Path(ouput_video).exists(): raise FileExistsError(f'The video file {ouput_video} already exists')
+
+        # Validate whether the file is a video
+        validate_media(path=self.file, expected_type="video")
+
+        voice_settings, transcription_settings = self.__validate_dictionaries(voice_settings, transcription_settings)
 
 
         file_manager = FileManager()
@@ -81,7 +110,9 @@ class GenerateTranslation:
             source_lang=source_lang
         )
 
-        transcription = translate_audio.transcribe_with_local_whisper_model(model="base")
+        transcription = translate_audio.transcribe_with_local_whisper_model(
+            model=transcription_settings["model"]
+        )
 
         # Remember to use deepl
         translated_transcript = translate_audio.translate(text=transcription["text"])
@@ -90,7 +121,11 @@ class GenerateTranslation:
         audios = translate_audio.convert_text_to_audio_with_openai(
             text=translated_transcript, 
             folder=file_manager.audios_folder,
-            api_key=openai_api_key
+            api_key=openai_api_key,
+            model=voice_settings["model"],
+            voice=voice_settings["voice"],
+            instructions=voice_settings["instructions"],
+            speed=voice_settings["speed"]
         )
 
         i=0
@@ -105,7 +140,8 @@ class GenerateTranslation:
 
             create_srt_file_with_local_whisper_model(
                 file=audio, 
-                srt_file=srt_file
+                srt_file=srt_file,
+                model=transcription_settings["model"]
             )
 
             status_basic_video = create_video_with_audio(
@@ -120,8 +156,8 @@ class GenerateTranslation:
             )
 
             if not status_basic_video or not status_subtitle_video:
+                merge_audios(audio_files=audios, output=ouput_video)
                 print("The video could not be created. It was not possible to create the video. Instead, an audio file was created.")
-                merge_audios(audio_files=audios, output='final_audio.wav')
                 return
 
             subtitle_videos.append(subtitle_video)

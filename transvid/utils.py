@@ -23,7 +23,7 @@ def validate_media(path : str, expected_type : str= "audio"):
         else:
             raise InvalidFileType(f"The file '{path}' is not a valid video file.")
     else:
-        raise ValueError("Expected type must be either 'audio' or 'video'.")
+        raise ValueError(f"Expected type must be {expected_type}.")
 
 def merge_audios(audio_files : list[str], output : str ="final_audio.mp3"):
     """

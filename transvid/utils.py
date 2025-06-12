@@ -5,25 +5,20 @@ import subprocess
 from moviepy import concatenate_audioclips, AudioFileClip
 from errors import InvalidFileType
 
-def validate_media(path : str, expected_type : str= "audio"):
+def validate_media(file: str):
     # Extensiones válidas para audio y video
     audio_extensions = {'.mp3', '.wav', '.aac', '.ogg', '.flac', '.m4a'}
     video_extensions = {'.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm'}
 
-    extension = Path(path).suffix.lower()
+    extension = Path(file).suffix.lower()
 
-    if expected_type == "audio":
-        if extension in audio_extensions:
-            return "audio"
-        else:
-            raise InvalidFileType(f"The file '{path}' is not a valid audio file.")
-    elif expected_type == "video":
-        if extension in video_extensions:
-            return "video"
-        else:
-            raise InvalidFileType(f"The file '{path}' is not a valid video file.")
+    # Determinar si es un archivo de audio o video basado en la extensión
+    if extension in audio_extensions:
+        return "audio"
+    elif extension in video_extensions:
+        return "video"
     else:
-        raise ValueError(f"Expected type must be {expected_type}.")
+        raise InvalidFileType(f"The file '{path}' is not a valid audio or video file.")
 
 def merge_audios(audio_files : list[str], output : str ="final_audio.mp3"):
     """
@@ -98,20 +93,11 @@ def embed_subtitles(input_video : str, subtitles_file :str, output_video : str, 
         print("Error running ffmpeg:", e)
         return False
 
-def convert_to_mkv(input_file, output_file=None):
-    """
-    Converts any video format to MKV using ffmpeg.
+def change_file_format(input_file : str, output_file : str):
 
-    :param input_file: Path to the input video file.
-    :param output_file: (Optional) Path to the output MKV file. If not specified, 
-                        the output will have the same name with .mkv extension.
-    """
     input_path = Path(input_file)
 
-    if output_file is None:
-        output_path = input_path.with_suffix('.mkv')
-    else:
-        output_path = Path(output_file)
+    output_path = Path(output_file)
 
     try:
         (

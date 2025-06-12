@@ -1,9 +1,11 @@
 import yt_dlp
-from utils import FileManager, convert_to_mkv, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios, validate_media
+from utils import FileManager, change_file_format, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios, validate_media
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip, concatenate_videoclips
 from translators import TranslateAudio
 from pathlib import Path
+from errors import InvalidFileType
+from uuid import uuid4
 
 
 def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : str = "turbo"):
@@ -45,10 +47,25 @@ class DownloadYoutubeVideo:
             video.download([self.url])
 
 class GenerateTranslation:
-    def __init__(self, file : str):
+    def __init__(
+            self, 
+            file : str,
+            target_lang : str, 
+            source_lang : str =None,
+            openai_api_key: str = None,
+        ):
+        
         self.file = FileManager().check_path(path=file)
+        self.target_lang = target_lang
+        self.source_lang = source_lang
+        self.openai_api_key = openai_api_key
 
-    def __validate_dictionaries(initial_voice_settings : dict = None, initial_transcription_settings: dict = None):
+
+    def __validate_dictionaries(
+            initial_voice_settings : dict = None, 
+            initial_transcription_settings: dict = None,
+            initial_translate_settings : dict = None,
+        ):
 
         if initial_voice_settings is None:
             voice_settings = {
@@ -72,61 +89,93 @@ class GenerateTranslation:
 
         else:
             transcription_settings  = {
-                "model": transcription_settings.get("model", "turbo")
+                "model": initial_transcription_settings.get("model", "turbo")
             }
 
-        return voice_settings, transcription_settings
+        if initial_translate_settings is None:
+            translate_settings = {
+                "translator": "gooogletrans",
+                "auth_key": None
+            }
 
-    def create_video(
+        else:
+            translate_settings  = {
+                "translator": initial_translate_settings.get("translator", "googletrans"),
+                "auth_key": initial_translate_settings.get("auth_key", None)
+            }
+
+        return voice_settings, transcription_settings, translate_settings
+    
+    def __extract_audio(
             self, 
-            ouput_video : str,
-            target_lang : str, 
-            source_lang : str =None,
-            openai_api_key: str = None,
-            voice_settings : dict  = None,
-            transcription_settings : dict = None
-
-        ):  
-
-        if Path(ouput_video).exists(): raise FileExistsError(f'The video file {ouput_video} already exists')
-
-        # Validate whether the file is a video
-        validate_media(path=self.file, expected_type="video")
-
-        voice_settings, transcription_settings = self.__validate_dictionaries(voice_settings, transcription_settings)
-
+            voice_settings : dict, 
+            transcription_settings : dict, 
+            translate_settings : dict
+        ):
+        
+        voice_settings, transcription_settings, translate_settings = self.__validate_dictionaries(
+            voice_settings, 
+            transcription_settings,
+            translate_settings
+        )
 
         file_manager = FileManager()
         file_manager.create_structure()
 
-        video_main_mkv  = convert_to_mkv(self.file, f'{file_manager.videos_folder}/main_video.mkv')
-        audio_main_wav = VideoFileClip(video_main_mkv).audio 
+        target_file = validate_media(self.file)
 
-        audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')
+        if  target_file== "video":
+            video_main_mkv  = change_file_format(self.file, f'{file_manager.videos_folder}/main_video.mkv')
+            audio_main_wav = VideoFileClip(video_main_mkv).audio 
+            audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')
+        
+        else:
+            change_file_format(input_file=self.file, output_file=f'{file_manager.audios_folder}/main_audio.wav')
 
         translate_audio = TranslateAudio(
             file=f'{file_manager.audios_folder}/main_audio.wav', 
-            target_lang=target_lang, 
-            source_lang=source_lang
+            target_lang=self.target_lang, 
+            source_lang=self.source_lang
         )
 
         transcription = translate_audio.transcribe_with_local_whisper_model(
             model=transcription_settings["model"]
         )
 
-        # Remember to use deepl
-        translated_transcript = translate_audio.translate(text=transcription["text"])
+        translated_transcript = translate_audio.translate(
+            text=transcription["text"],
+            auth_key=translate_settings["auth_key"],
+            translator=translate_settings["translator"]
+        )
 
 
         audios = translate_audio.convert_text_to_audio_with_openai(
             text=translated_transcript, 
             folder=file_manager.audios_folder,
-            api_key=openai_api_key,
+            api_key=self.openai_api_key,
             model=voice_settings["model"],
             voice=voice_settings["voice"],
             instructions=voice_settings["instructions"],
             speed=voice_settings["speed"]
         )
+
+        return audios, transcription_settings, file_manager
+
+
+    def create_video(
+            self, 
+            ouput_video : str,
+            voice_settings : dict  = None,
+            transcription_settings : dict = None,
+            translate_settings : dict = None,
+        ):  
+
+        if Path(ouput_video).exists(): raise FileExistsError(f'The video file {ouput_video} already exists')
+
+        # Validate whether the output file is a video
+        if validate_media(file=ouput_video) != "video": raise InvalidFileType(f"The file '{ouput_video}' is not a valid video file.")
+
+        audios, transcription_settings, file_manager = self.__extract_audio(voice_settings, transcription_settings, translate_settings)        
 
         i=0
 
@@ -156,7 +205,7 @@ class GenerateTranslation:
             )
 
             if not status_basic_video or not status_subtitle_video:
-                merge_audios(audio_files=audios, output=ouput_video)
+                merge_audios(audio_files=audios, output=f'transvid_audio_{uuid4().hex}.wav')
                 print("The video could not be created. It was not possible to create the video. Instead, an audio file was created.")
                 return
 
@@ -166,4 +215,21 @@ class GenerateTranslation:
         
         subtitle_videos = [VideoFileClip(video) for video in subtitle_videos]
         subtitle_main_video = concatenate_videoclips(subtitle_videos)
-        subtitle_main_video.write_videofile("final_video.mkv", codec="libx264", audio_codec="aac")
+        subtitle_main_video.write_videofile(ouput_video, codec="libx264", audio_codec="aac")
+
+    def create_audio(
+            self, 
+            ouput_audio : str,
+            voice_settings : dict  = None,
+            transcription_settings : dict = None,
+            translate_settings : dict = None,
+        ):
+
+        if Path(ouput_audio).exists(): raise FileExistsError(f'The audio file {ouput_audio} already exists')
+
+        # Validate whether the file is a audio
+        if validate_media(file=ouput_audio) != "audio": raise InvalidFileType(f"The file '{ouput_audio}' is not a valid audio file.")
+
+        extract_audio = self.__extract_audio(voice_settings, transcription_settings, translate_settings)
+
+        merge_audios(audio_files=extract_audio[0], output=ouput_audio)

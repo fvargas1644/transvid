@@ -93,4 +93,3 @@ class TranslateAudio(TextTranslators):
             i+=1
 
         return audios
-    

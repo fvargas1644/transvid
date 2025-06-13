@@ -62,6 +62,7 @@ class GenerateTranslation:
 
 
     def __validate_dictionaries(
+            self,
             initial_voice_settings : dict = None, 
             initial_transcription_settings: dict = None,
             initial_translate_settings : dict = None,
@@ -94,7 +95,7 @@ class GenerateTranslation:
 
         if initial_translate_settings is None:
             translate_settings = {
-                "translator": "gooogletrans",
+                "translator": "googletrans",
                 "auth_key": None
             }
 
@@ -108,9 +109,9 @@ class GenerateTranslation:
     
     def __extract_audio(
             self, 
-            voice_settings : dict, 
-            transcription_settings : dict, 
-            translate_settings : dict
+            voice_settings : dict = None, 
+            transcription_settings : dict = None, 
+            translate_settings : dict = None
         ):
         
         voice_settings, transcription_settings, translate_settings = self.__validate_dictionaries(

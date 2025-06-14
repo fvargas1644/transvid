@@ -234,3 +234,18 @@ class GenerateTranslation:
         extract_audio = self.__extract_audio(voice_settings, transcription_settings, translate_settings)
 
         merge_audios(audio_files=extract_audio[0], output=ouput_audio)
+
+    def add_subtitles_to_video(
+            self, 
+            ouput_video :str,):
+        if Path(ouput_video).exists(): raise FileExistsError(f'The video file {ouput_video} already exists')
+
+        # Validate whether the output file is a video
+        if validate_media(file=ouput_video) != "video": raise InvalidFileType(f"The file '{ouput_video}' is not a valid video file.")
+
+        file_manager = FileManager()
+        file_manager.create_structure()
+
+        video_main_mkv  = change_file_format(self.file, f'{file_manager.videos_folder}/main_video.mkv')
+        audio_main_wav = VideoFileClip(video_main_mkv).audio 
+        audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')

@@ -29,7 +29,7 @@ def create_srt_file_with_local_whisper_model(
             
             start_time = format_timestamp_for_srt_files(segment['start'])
             end_time = format_timestamp_for_srt_files(segment['end'])
-            
+
             if(translate_text):
                 if not target_lang: raise ValueError(f'The target language was not found.')
 
@@ -258,11 +258,26 @@ class GenerateTranslation:
 
     def add_subtitles_to_video(
             self, 
-            ouput_video :str,):
+            ouput_video :str,
+            transcription_settings : dict = None,
+            translate_settings : dict = None,
+            font_size : str = 18,
+            subtitles_alignment : str = 2,
+        ):
+
         if Path(ouput_video).exists(): raise FileExistsError(f'The video file {ouput_video} already exists')
 
-        # Validate whether the output file is a video
+        # Validate whether the output a file is a video
         if validate_media(file=ouput_video) != "video": raise InvalidFileType(f"The file '{ouput_video}' is not a valid video file.")
+        if validate_media(file=self.file) != "video": raise InvalidFileType(f"The file '{self.file}' is not a valid video file.")
+
+        validate_dictionaries = self.__validate_dictionaries(
+            initial_transcription_settings=transcription_settings,
+            initial_translate_settings=translate_settings
+        )
+
+        transcription_settings = validate_dictionaries[1]
+        translate_settings = validate_dictionaries[2]
 
         file_manager = FileManager()
         file_manager.create_structure()
@@ -270,3 +285,27 @@ class GenerateTranslation:
         video_main_mkv  = change_file_format(self.file, f'{file_manager.videos_folder}/main_video.mkv')
         audio_main_wav = VideoFileClip(video_main_mkv).audio 
         audio_main_wav.write_audiofile(f'{file_manager.audios_folder}/main_audio.wav')
+
+        create_srt_file_with_local_whisper_model(
+            file=f'{file_manager.audios_folder}/main_audio.wav', 
+            srt_file=f'{file_manager.transcriptions_folder}/main_srt.srt',
+            model=transcription_settings["model"],
+            translate_text=True,
+            target_lang=self.target_lang,
+            source_lang=self.source_lang,
+            auth_key=translate_settings["auth_key"],
+            translator=translate_settings["translator"]
+        )
+
+
+        status_subtitle_video = embed_subtitles(
+                input_video=video_main_mkv, 
+                subtitles_file=f'{file_manager.transcriptions_folder}/main_srt.srt', 
+                output_video=ouput_video,
+                font_size=font_size,
+                alignment=subtitles_alignment
+            )
+
+        if not status_subtitle_video:
+            print("It was not possible to add subtitles to the video.")
+            return

@@ -18,7 +18,7 @@ def validate_media(file: str):
     elif extension in video_extensions:
         return "video"
     else:
-        raise InvalidFileType(f"The file '{path}' is not a valid audio or video file.")
+        raise InvalidFileType(f"The file '{file}' is not a valid audio or video file.")
 
 def merge_audios(audio_files : list[str], output : str ="final_audio.mp3"):
     """

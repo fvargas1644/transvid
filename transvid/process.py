@@ -2,13 +2,22 @@ import yt_dlp
 from utils import FileManager, change_file_format, create_video_with_audio, format_timestamp_for_srt_files, embed_subtitles, merge_audios, validate_media
 from openai_models import LocalWhisperModel
 from moviepy import VideoFileClip, concatenate_videoclips
-from translators import TranslateAudio
+from translators import TranslateAudio, TextTranslators
 from pathlib import Path
 from errors import InvalidFileType
 from uuid import uuid4
 
 
-def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : str = "turbo"):
+def create_srt_file_with_local_whisper_model(
+        file: str, 
+        srt_file : str, 
+        model : str = "turbo",
+        translate_text : str = False,
+        target_lang : str =None, 
+        source_lang : str =None,
+        auth_key : str = None,
+        translator : str = "googletrans",
+    ):
 
     FileManager().check_path(file)
 
@@ -20,7 +29,19 @@ def create_srt_file_with_local_whisper_model(file: str, srt_file : str, model : 
             
             start_time = format_timestamp_for_srt_files(segment['start'])
             end_time = format_timestamp_for_srt_files(segment['end'])
-            text = segment['text'].lstrip() 
+            
+            if(translate_text):
+                if not target_lang: raise ValueError(f'The target language was not found.')
+
+                text_translators = TextTranslators(target_lang=target_lang, source_lang=source_lang) 
+                text = text_translators.translate(
+                    text=segment['text'].lstrip(), 
+                    auth_key=auth_key, 
+                    translator=translator
+                ) 
+            else:
+                text = segment['text'].lstrip()
+
             segment_id = segment['id'] + 1
 
             srt_entry = f"{segment_id}\n{start_time} --> {end_time}\n{text}\n\n"

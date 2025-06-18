@@ -1,0 +1,18 @@
+__pycache__/*
+transvid/__pycache__/*
+dist
+*.pyc
+.coverage
+.vscode/
+build/
+*.html
+*.css
+*.png
+test.ipynb
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/

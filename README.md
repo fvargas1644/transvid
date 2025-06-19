@@ -79,7 +79,7 @@ translator.add_subtitles_to_video(output_video="video_with_subtitles.mp4")
 ### 💳 Create a New Translated Video with Synthetic Voices — Paid Feature
 This function generates a new video with translated audio using synthetic voices. The resulting video includes subtitles in the language specified via target_lang.
 
-📌 ***Estimated cost:** about **$1 USD per hour of video**, based on OpenAI’s token-based pricing.
+📌 **Estimated cost:** about **$1 USD per hour of video**, based on OpenAI’s token-based pricing.
 
 ```python
 translator.create_video(output_video="translated_video.mp4")

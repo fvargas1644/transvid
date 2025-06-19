@@ -79,7 +79,7 @@ translator.add_subtitles_to_video(output_video="video_with_subtitles.mp4")
 ### 💳 Create a New Translated Video with Synthetic Voices — Paid Feature
 This function generates a new video with translated audio using synthetic voices. The resulting video includes subtitles in the language specified via target_lang.
 
-📌 **Estimated cost: About $1 USD per hour of video**, based on OpenAI’s token-based pricing.
+📌 ***Estimated cost:** about **$1 USD per hour of video**, based on OpenAI’s token-based pricing.
 
 ```python
 translator.create_video(output_video="translated_video.mp4")
@@ -88,7 +88,7 @@ translator.create_video(output_video="translated_video.mp4")
 ### 💳 Export Translated Audio Only — Paid Feature
 Exports only the translated audio (without video). Like the previous function, it uses OpenAI models and is subject to token-based billing.
 
-📌 **Estimated cost: About $1 USD per hour of audio**, based on OpenAI’s token-based pricing.
+📌 **Estimated cost:** about **$1 USD per hour of audio**, based on OpenAI’s token-based pricing.
 
 ```python
 translator.create_audio(output_audio="translated_audio.wav")
@@ -101,7 +101,7 @@ The voice synthesis and audio translation features rely on OpenAI services (such
 
 While costs may vary depending on audio quality and length, a general estimate is:
 
-- **hour of audio ≈ 60,000 tokens ≈ ~$1 USD**
+- **Hour of audio ≈ 60,000 tokens ≈ ~$1 USD**
 
 Make sure your OpenAI account has a valid API key and sufficient credit balance before using these features.
 

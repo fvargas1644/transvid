@@ -111,4 +111,47 @@ Let me know if you’d like to include an installation guide or usage example wi
 
 ## ⚙️ Custom Parameters
 
+The methods `create_video`, `create_audio`, and `add_subtitles_to_video` accept optional settings as dictionaries:
+
+### `voice_settings`
+
+```python
+{
+    "model": "tts-1",
+    "voice": "onyx",
+    "instructions": "speak clearly",
+    "speed": 1.0
+}
+```
+
+### `transcription_settings`
+
+```python
+{
+    "model": "turbo"  # or any other available Whisper model
+}
+```
+
+### `translate_settings`
+
+```python
+{
+    "translator": "googletrans",  # or "deepl"
+    "auth_key": None  # if required by the translation service (deepl)
+}
+```
+
+---
+
+## 📂 Generated Directory Structure
+
+When running the methods, supporting files are automatically saved to:
+
+```
+📁 tranvid#/
+    📁 audios/
+    📁 videos/
+    📁 transcriptions/
+```
+
 
